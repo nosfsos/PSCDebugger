@@ -1,0 +1,10 @@
+C:\Users\Yuri\Source\Repos\ScriptDebugger\bin\Debug\ScriptDebugger.exe.config
+C:\Users\Yuri\Source\Repos\ScriptDebugger\bin\Debug\ScriptDebugger.exe
+C:\Users\Yuri\Source\Repos\ScriptDebugger\bin\Debug\ScriptDebugger.pdb
+C:\Users\Yuri\Source\Repos\ScriptDebugger\obj\Debug\ScriptDebugger.csproj.AssemblyReference.cache
+C:\Users\Yuri\Source\Repos\ScriptDebugger\obj\Debug\ScriptDebugger.Properties.Resources.resources
+C:\Users\Yuri\Source\Repos\ScriptDebugger\obj\Debug\ScriptDebugger.csproj.GenerateResource.cache
+C:\Users\Yuri\Source\Repos\ScriptDebugger\obj\Debug\ScriptDebugger.csproj.CoreCompileInputs.cache
+C:\Users\Yuri\Source\Repos\ScriptDebugger\obj\Debug\ScriptDebugger.exe
+C:\Users\Yuri\Source\Repos\ScriptDebugger\obj\Debug\ScriptDebugger.pdb
+C:\Users\Yuri\Source\Repos\ScriptDebugger\obj\Debug\ScriptDebugger.mainWindow.resources
