@@ -41,7 +41,7 @@ namespace ScriptDebugger
         private void addDebugLines_Click(object sender, EventArgs e)
         {
             var startDebug = "Debug.notification(\"Function starting!\")";
-            var endDebug = "Debug.notification(\"Function ending!\")";
+            var endDebug = "Debug.notification(\"Function ending!{0}\")";
 
             foreach (var filePath in _filePaths)
             {
@@ -88,8 +88,7 @@ namespace ScriptDebugger
 
                             if (line.Contains("EndFunction"))
                                 sb.Append("\t"); // extra indent to be ahead of EndFunction. Not needed in case of return
-
-                            fileText.Add(sb + endDebug);
+                            fileText.Add( string.Format(sb + endDebug, line.Contains("return") ? line : ""));
                             fileText.Add(line);
                         }
                         else
