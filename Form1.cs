@@ -14,12 +14,15 @@ namespace ScriptDebugger
 {
     public partial class MainWindow : Form
     {
+        private List<string> _filePaths;
+        private string _scriptsDirectory;
+        private string _targetDirectory;
+
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        private List<string> _filePaths;
 
         private void open_Click(object sender, EventArgs e)
         {
@@ -29,7 +32,8 @@ namespace ScriptDebugger
 
                 if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
                 {
-                    _filePaths = Directory.EnumerateFiles(fbd.SelectedPath, "*.psc", SearchOption.AllDirectories).ToList();
+                    _scriptsDirectory = fbd.SelectedPath;
+                    _filePaths = Directory.EnumerateFiles(_scriptsDirectory, "*.psc", SearchOption.AllDirectories).ToList();
 
                     MessageBox.Show(@"Files found: " + _filePaths.Count, @"Message");
 
@@ -40,8 +44,14 @@ namespace ScriptDebugger
 
         private void addDebugLines_Click(object sender, EventArgs e)
         {
-            var startDebug = "Debug.notification(\"Function starting!\")";
-            var endDebug = "Debug.notification(\"Function ending!{0}\")";
+            var startDebug = "Debug.Trace(\"Function starting!\")";
+            var endDebug = "Debug.Trace(\"Function ending!{0}\")";
+
+            if (string.IsNullOrWhiteSpace(_targetDirectory) || string.IsNullOrWhiteSpace(_scriptsDirectory))
+            {
+                MessageBox.Show(@"Select the folders before pressing this button");
+                return;
+            }
 
             foreach (var filePath in _filePaths)
             {
@@ -54,7 +64,10 @@ namespace ScriptDebugger
                     {
                         var line = reader.ReadLine();
 
-                        if (line.Length == 0 || line[0] == ';') // current line is empty or is a comment
+                        if (line == null)
+                            continue;
+
+                        if (line.Length == 0 || line[0] == ';' || line[0] == '/') // current line is empty or is a comment
                             continue;
 
                         if (line.Contains("Function") && line.Contains("(") && line.Contains(")")) // function declaration line
@@ -96,16 +109,46 @@ namespace ScriptDebugger
                             fileText.Add(line);
                         }
                     }
-                    // write the lines back to the file
                     reader.Dispose();
                 }
 
-                File.WriteAllLines(filePath, fileText);
+                // write the lines back to the file
+
+                var path = _targetDirectory + filePath.Replace(_scriptsDirectory, "");
+                //MessageBox.Show(path);
+                var newDir = "";
+                var directory = path.Split('\\');
+                for (var i = 0; i < directory.Length - 1; i++)
+                {
+                    newDir += directory[i] + (i == directory.Length - 1 ? "": "\\");
+                }
+
+                if (Directory.Exists(newDir) == false)
+                    Directory.CreateDirectory(newDir);
+
+                File.WriteAllLines(path, fileText);
 
                 //readText.Clear();
             }
 
             MessageBox.Show(@"Done");
+        }
+
+        private void targetDirectory_Click(object sender, EventArgs e)
+        {
+            using (var fbd = new FolderBrowserDialog())
+            {
+                var result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    _targetDirectory = fbd.SelectedPath;
+
+                    MessageBox.Show(@"Directory selected: " + _targetDirectory, @"Message");
+
+                    //MessageBox.Show(_filePaths[0]);
+                }
+            }
         }
     }
 }
