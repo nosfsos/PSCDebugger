@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ScriptDebugger
@@ -45,7 +42,7 @@ namespace ScriptDebugger
         private void addDebugLines_Click(object sender, EventArgs e)
         {
             var startDebug = "Debug.Trace(\"Function starting!\")";
-            var endDebug = "Debug.Trace(\"Function ending!{0}\")";
+            var endDebug = "Debug.Trace(\"Function ending! {0}\")";
 
             if (string.IsNullOrWhiteSpace(_targetDirectory) || string.IsNullOrWhiteSpace(_scriptsDirectory))
             {
@@ -67,10 +64,19 @@ namespace ScriptDebugger
                         if (line == null)
                             continue;
 
-                        if (line.Length == 0 || line[0] == ';' || line[0] == '/') // current line is empty or is a comment
-                            continue;
+                        var culture = new CultureInfo("en-US");
 
-                        if (line.Contains("Function") && line.Contains("(") && line.Contains(")")) // function declaration line
+                        var trimmedLine = line.Trim();
+
+                        if (line.Length == 0 || trimmedLine.Length == 0 || trimmedLine[0] == ';' || trimmedLine[0] == '/' ||
+                            culture.CompareInfo.IndexOf(line, "trace", CompareOptions.IgnoreCase) >=
+                            0) // current line is empty, is a comment or is already a trace
+                        {
+                            fileText.Add(line);
+                            continue;
+                        }
+
+                        if (Regex.Match(line, @"\bFunction\b", RegexOptions.IgnoreCase).Success && line.Contains("(") && line.Contains(")")) // function declaration line
                         {
                             // add startDebug line
 
@@ -87,7 +93,7 @@ namespace ScriptDebugger
                             fileText.Add(line);
                             fileText.Add(sb + startDebug);
                         }
-                        else if (line.Contains("EndFunction") || line.Contains("return"))
+                        else if (Regex.Match(line, @"\bEndFunction\b", RegexOptions.IgnoreCase).Success || Regex.Match(line, @"\breturn\b", RegexOptions.IgnoreCase).Success || Regex.Match(line, @"\bReturn\b", RegexOptions.IgnoreCase).Success)
                         {
                             // add endDebug before returns and EndFunctions
 
@@ -101,7 +107,7 @@ namespace ScriptDebugger
 
                             if (line.Contains("EndFunction"))
                                 sb.Append("\t"); // extra indent to be ahead of EndFunction. Not needed in case of return
-                            fileText.Add( string.Format(sb + endDebug, line.Contains("return") ? line : ""));
+                            fileText.Add( string.Format(sb + endDebug, culture.CompareInfo.IndexOf(line, "return", CompareOptions.IgnoreCase) >= 0 ? trimmedLine : ""));
                             fileText.Add(line);
                         }
                         else
