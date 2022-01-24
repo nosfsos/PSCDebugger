@@ -107,7 +107,12 @@ namespace ScriptDebugger
 
                             if (line.Contains("EndFunction"))
                                 sb.Append("\t"); // extra indent to be ahead of EndFunction. Not needed in case of return
-                            fileText.Add( string.Format(sb + endDebug, culture.CompareInfo.IndexOf(line, "return", CompareOptions.IgnoreCase) >= 0 ? trimmedLine : ""));
+                            fileText.Add( string.Format(
+                                sb + endDebug, 
+                                culture.CompareInfo.IndexOf(
+                                    line,
+                                    "return",
+                                    CompareOptions.IgnoreCase) >= 0 ? trimmedLine.Replace("\"","") : ""));
                             fileText.Add(line);
                         }
                         else
