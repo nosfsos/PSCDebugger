@@ -68,7 +68,7 @@ namespace ScriptDebugger
 
                         var trimmedLine = line.Trim();
 
-                        if (line.Length == 0 || trimmedLine.Length == 0 || trimmedLine[0] == ';' || trimmedLine[0] == '/' ||
+                        if (line.Length == 0 || trimmedLine.Length == 0 || trimmedLine[0] == ';' || trimmedLine[0] == '/' || trimmedLine[0] == '{' ||
                             culture.CompareInfo.IndexOf(line, "trace", CompareOptions.IgnoreCase) >=
                             0) // current line is empty, is a comment or is already a trace
                         {
