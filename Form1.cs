@@ -41,8 +41,8 @@ namespace ScriptDebugger
 
         private void addDebugLines_Click(object sender, EventArgs e)
         {
-            var startDebug = "Debug.Trace(\"Function starting!\")";
-            var endDebug = "Debug.Trace(\"Function ending! {0}\")";
+            var startDebug = "Debug.TraceStack(\"Function starting!\")";
+            var endDebug = "Debug.TraceStack(\"Function ending! {0}\")";
 
             if (string.IsNullOrWhiteSpace(_targetDirectory) || string.IsNullOrWhiteSpace(_scriptsDirectory))
             {
