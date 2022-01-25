@@ -57,23 +57,96 @@ namespace ScriptDebugger
                 var fileText = new List<string>();
                 using (var reader = new StreamReader(filePath))
                 {
+
+                    var culture = new CultureInfo("en-US");
+                    var insideCommentBlock = false;
+                    var insideEvent = false;
                     while (reader.EndOfStream == false)
                     {
                         var line = reader.ReadLine();
 
-                        if (line == null)
-                            continue;
 
-                        var culture = new CultureInfo("en-US");
+                        // check for null or empty
+                        if (string.IsNullOrEmpty(line))
+                            continue;
 
                         var trimmedLine = line.Trim();
 
-                        if (line.Length == 0 || trimmedLine.Length == 0 || trimmedLine[0] == ';' || trimmedLine[0] == '/' || trimmedLine[0] == '{' ||
-                            culture.CompareInfo.IndexOf(line, "trace", CompareOptions.IgnoreCase) >=
-                            0) // current line is empty, is a comment or is already a trace
+                        // check if trimmed line is empty
+                        if (trimmedLine.Length == 0)
+                            continue;
+
+
+                        //check if inside event
+                        if (trimmedLine.StartsWith("event", true, culture))
+                        {
+                            insideEvent = true;
+                            fileText.Add(line);
+                            continue;
+                        }
+
+                        if (trimmedLine.StartsWith("endevent", true, culture))
+                        {
+                            insideEvent = false;
+                            fileText.Add(line);
+                            continue;
+                        }
+
+                        if (insideEvent)
                         {
                             fileText.Add(line);
                             continue;
+                        }
+
+                        //check for comment block start
+                        if (trimmedLine.StartsWith(";/"))
+                        {
+                            insideCommentBlock = true;
+                            fileText.Add(line);
+                            continue;
+                        }
+                        // check for end of comment block
+                        if (trimmedLine.Contains("/;"))
+                        {
+                            insideCommentBlock = false;
+                            fileText.Add(line);
+                            continue;
+                        }
+                        // if neither start or end of comment block and flag true, then we are inside a comment block
+                        if (insideCommentBlock)
+                        {
+                            fileText.Add(line);
+                            continue;
+                        }
+
+                        // check for empty, comment or trace
+                        if (trimmedLine[0] == ';' || trimmedLine[0] == '/' || trimmedLine[0] == '{' ||
+                            culture.CompareInfo.IndexOf(line, "trace", CompareOptions.IgnoreCase) >=
+                            0) 
+                        {
+                            fileText.Add(line);
+                            continue;
+                        }
+
+
+                        if (line.Contains(';'))
+                        {
+                            var splitLine = trimmedLine.Split(';');
+
+                            // check if ; is at the end of the line
+                            if (splitLine.Length < 2)
+                            {
+                                fileText.Add(line);
+                                continue;
+                            }
+
+                            // if characters after the ; contains the words function, endfunction or return, don't add trace debug
+                            if (Regex.Match(splitLine[1], @"\bFunction\b", RegexOptions.IgnoreCase).Success && splitLine[1].Contains("(") &&
+                                splitLine[1].Contains(")") || Regex.Match(splitLine[1], @"\bEndFunction\b", RegexOptions.IgnoreCase).Success || Regex.Match(splitLine[1], @"\breturn\b", RegexOptions.IgnoreCase).Success)
+                            {
+                                fileText.Add(line);
+                                continue;
+                            }
                         }
 
                         if (Regex.Match(line, @"\bFunction\b", RegexOptions.IgnoreCase).Success && line.Contains("(") && line.Contains(")")) // function declaration line
@@ -93,7 +166,7 @@ namespace ScriptDebugger
                             fileText.Add(line);
                             fileText.Add(sb + startDebug);
                         }
-                        else if (Regex.Match(line, @"\bEndFunction\b", RegexOptions.IgnoreCase).Success || Regex.Match(line, @"\breturn\b", RegexOptions.IgnoreCase).Success || Regex.Match(line, @"\bReturn\b", RegexOptions.IgnoreCase).Success)
+                        else if (Regex.Match(line, @"\bEndFunction\b", RegexOptions.IgnoreCase).Success || Regex.Match(line, @"\breturn\b", RegexOptions.IgnoreCase).Success)
                         {
                             // add endDebug before returns and EndFunctions
 
